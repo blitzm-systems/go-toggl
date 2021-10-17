@@ -94,7 +94,7 @@ type Project struct {
 	AutoEstimates   bool       `json:"auto_estimates"`
 	EstimatedHours  int        `json:"estimated_hours"`
 	Rate            float32    `json:"rate"`
-	Color           int        `json:"color"`
+	Color           string     `json:"color"`
 	// Misc props, not implemented
 	// at
 }

@@ -78,7 +78,7 @@ type Client struct {
 	Notes string `json:"notes"`
 }
 
-// Project represents a project.
+// Project represents a project. Based on https://github.com/toggl/toggl_api_docs/blob/master/chapters/projects.md
 type Project struct {
 	Wid             int        `json:"wid"`
 	ID              int        `json:"id"`
@@ -87,6 +87,16 @@ type Project struct {
 	Active          bool       `json:"active"`
 	Billable        bool       `json:"billable"`
 	ServerDeletedAt *time.Time `json:"server_deleted_at,omitempty"`
+	IsPrivate       bool       `json:"is_private"`
+	CreatedAt       *time.Time `json:"created_at"`
+	Template        bool       `json:"template"`
+	TemplateId      int        `json:"template_id"`
+	AutoEstimates   bool       `json:"auto_estimates"`
+	EstimatedHours  int        `json:"estimated_hours"`
+	Rate            float32    `json:"rate"`
+	Color           int        `json:"color"`
+	// Misc props, not implemented
+	// at
 }
 
 // IsActive indicates whether a project exists and is active
@@ -94,12 +104,16 @@ func (p *Project) IsActive() bool {
 	return p.Active && p.ServerDeletedAt == nil
 }
 
-// Task represents a task.
+// Task represents a task. Based on https://github.com/toggl/toggl_api_docs/blob/master/chapters/tasks.md
 type Task struct {
-	Wid  int    `json:"wid"`
-	Pid  int    `json:"pid"`
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	Wid              int        `json:"wid"`
+	Pid              int        `json:"pid"`
+	ID               int        `json:"id"`
+	Name             string     `json:"name"`
+	EstimatedSeconds int        `json:"estimated_seconds"`
+	Active           bool       `json:"active"`
+	At               *time.Time `json:"at"`
+	TrackedSeconds   int        `json:"tracked_seconds"`
 }
 
 // Tag represents a tag.
@@ -447,7 +461,7 @@ func (e *TimeEntry) IsRunning() bool {
 func (session *Session) GetProjects(wid int) (projects []Project, err error) {
 	dlog.Printf("Getting projects for workspace %d", wid)
 	path := fmt.Sprintf("/workspaces/%v/projects", wid)
-	data,err := session.get(TogglAPI, path, nil)
+	data, err := session.get(TogglAPI, path, nil)
 	if err != nil {
 		return
 	}
@@ -464,7 +478,7 @@ func (session *Session) GetProject(id int) (project *Project, err error) {
 	}
 	dlog.Printf("Getting project with id %d", id)
 	path := fmt.Sprintf("/projects/%v", id)
-	data,err := session.get(TogglAPI, path, nil)
+	data, err := session.get(TogglAPI, path, nil)
 	if err != nil {
 		return nil, err
 	}
